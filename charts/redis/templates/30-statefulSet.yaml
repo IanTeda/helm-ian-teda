@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "redis.fullname" . }}
+  labels:
+    {{- include "redis.labels" . | nindent 4 }}
+
+spec:
+  serviceName: {{ include "redis.fullname" . }}
+  
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "redis.selectorLabels" . | nindent 6 }}
+
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      selector:
+        matchLabels:
+          {{- include "redis.labels" . | nindent 12 }}
+      storageClassName: {{ .Values.volume.storageClassName }}
+      accessModes: ["{{ .Values.volume.accessModes }}"]
+      resources:
+        requests:
+          storage: "{{ .Values.volume.size }}"
+
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "redis.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "redis.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          env:
+            - name: MASTER
+              value: "true"
+
+          command:
+            - redis-server
+            - "/redis-master/redis.conf"
+          
+          ports:
+            - name: database
+              containerPort: 6379
+              protocol: TCP
+
+          livenessProbe:
+            tcpSocket:
+              port: database
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            tcpSocket:
+              port: database
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              subPath: {{ .Values.nfs.subPath }}
+            - name: config
+              mountPath: /redis-master
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "redis.fullname" . }}
+            items:
+              - key: redis-config
+                path: redis.conf   
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
