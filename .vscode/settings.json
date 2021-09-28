@@ -2,7 +2,9 @@
     "cSpell.words": [
         "bitnami",
         "fullname",
+        "INITDB",
         "isready",
+        "Kubernetes",
         "metallb",
         "nindent",
         "PGID",

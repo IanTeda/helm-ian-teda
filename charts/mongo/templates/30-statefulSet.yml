@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "mongo.fullname" . }}
+  labels:
+    {{- include "mongo.labels" . | nindent 4 }}
+  
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "mongo.selectorLabels" . | nindent 6 }}
+
+  serviceName: {{ include "mongo.fullname" . }}
+
+                
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        selector:
+          matchLabels:
+            {{- include "mongo.labels" . | nindent 12 }}
+
+        storageClassName: {{ .Values.volume.storageClassName }}
+        accessModes: ["{{ .Values.volume.accessModes }}"]
+        resources:
+          requests:
+            storage: "{{ .Values.volume.size }}"
+
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mongo.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "mongo.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - name: database
+              protocol: TCP
+              containerPort: 27017
+
+          livenessProbe:
+            tcpSocket:
+              port: database
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            tcpSocket:
+              port: database
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+              
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          envFrom:
+            - secretRef:
+                name: {{ include "mongo.fullname" . }}
+            - configMapRef:
+                name: {{ include "mongo.fullname" . }}
+
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+              subPath: {{ .Values.nfs.subPath }}
