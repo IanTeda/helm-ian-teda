@@ -1,12 +1,16 @@
 {
     "cSpell.words": [
+        "Autoscaler",
         "bitnami",
         "fullname",
         "INITDB",
         "isready",
         "Kubernetes",
+        "linuxserver",
         "metallb",
+        "nextcloud",
         "nindent",
+        "PGADMIN",
         "PGID",
         "PUID",
         "unifi"
