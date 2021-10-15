@@ -3,7 +3,7 @@ entries:
   elasticsearch:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-15T12:52:21.961554+11:00"
+    created: "2021-10-15T22:25:49.164253+11:00"
     description: A Helm chart for Kubernetes
     digest: 873baac0c287f1b095afb26d2cfaef65e2c4d36eaf15ff201fc505ed45cfd4bc
     name: elasticsearch
@@ -11,10 +11,21 @@ entries:
     urls:
     - https://ianteda.github.io/helm-ian-teda/elasticsearch-0.1.0.tgz
     version: 0.1.0
+  graylog:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T22:25:49.169953+11:00"
+    description: A Helm chart for Kubernetes
+    digest: 62cb397c287fdc74f8ea0294072289f8d00eb6c798c4e32723e3be92a3c840d0
+    name: graylog
+    type: application
+    urls:
+    - https://ianteda.github.io/helm-ian-teda/graylog-0.1.0.tgz
+    version: 0.1.0
   mongo:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-15T12:52:22.003949+11:00"
+    created: "2021-10-15T22:25:49.17904+11:00"
     description: A Helm chart for Mongo
     digest: 4c46d8c1d744374a9992abe55ecee2477254944bc1f319ba364f89a52a0725f3
     name: mongo
@@ -25,7 +36,7 @@ entries:
   nextcloud:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-15T12:52:22.035705+11:00"
+    created: "2021-10-15T22:25:49.188222+11:00"
     description: A Helm chart for Kubernetes
     digest: cfad67a02e621527eafa19bd469f63ddc8b4746ec39b4ef58e4c10f79c70a349
     name: nextcloud
@@ -36,7 +47,7 @@ entries:
   postgres:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-15T12:52:22.071082+11:00"
+    created: "2021-10-15T22:25:49.196297+11:00"
     description: A Helm chart for Kubernetes
     digest: 71023546d2e2d1ca4864c272b650a8c9c58973d6d3e21a5463fd7478d6e8358f
     name: postgres
@@ -47,7 +58,7 @@ entries:
   redis:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2021-10-15T12:52:22.105287+11:00"
+    created: "2021-10-15T22:25:49.202117+11:00"
     description: A Helm chart for Kubernetes
     digest: 09ef00634b732fd1f518f278a66f367d9ba57484e97bebb435886ca115f105e6
     name: redis
@@ -55,4 +66,4 @@ entries:
     urls:
     - https://ianteda.github.io/helm-ian-teda/redis-0.1.0.tgz
     version: 0.1.0
-generated: "2021-10-15T12:52:21.903159+11:00"
+generated: "2021-10-15T22:25:49.158108+11:00"

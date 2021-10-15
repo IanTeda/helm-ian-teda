@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "graylog.fullname" . }}-udp
+  labels:
+    {{- include "graylog.labels" . | nindent 4 }}
+  annotations:
+    metallb.universe.tf/allow-shared-ip: {{ include "graylog.fullname" . }}
+    
+spec:
+  selector:
+    {{- include "graylog.selectorLabels" . | nindent 4 }}
+
+  type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+
+  ports:
+    - port: 5140
+      targetPort: syslog-udp
+      protocol: UDP
+      name: syslog-udp
+    - port: 5555
+      targetPort: raw-udp
+      protocol: UDP
+      name: raw
+    - port: 12201
+      targetPort: gelf-udp
+      protocol: UDP
+      name: gelf-udp
+    - port: 10001
+      targetPort: custom-udp
+      protocol: UDP
+      name: custom-udp
+
+    # - "5044:5044/tcp"   # Beats
+    # - "5140:5140/udp"   # Syslog
+    # - "5140:5140/tcp"   # Syslog
+    # - "5555:5555/tcp"   # RAW TCP
+    # - "5555:5555/udp"   # RAW TCP
+    # - "9000:9000/tcp"   # Server API
+    # - "12201:12201/tcp" # GELF TCP
+    # - "12201:12201/udp" # GELF UDP
+    # #- "10000:10000/tcp" # Custom TCP port
+    # #- "10000:10000/udp" # Custom UDP port
+    # - "13301:13301/tcp" # Forwarder data
+    # - "13302:13302/tcp" # Forwarder config

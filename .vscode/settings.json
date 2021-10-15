@@ -3,6 +3,7 @@
         "Autoscaler",
         "bitnami",
         "fullname",
+        "gelf",
         "INITDB",
         "isready",
         "Kubernetes",
@@ -13,7 +14,7 @@
         "PGADMIN",
         "PGID",
         "PUID",
-        "unifi",
-        "xpack"
+        "tini",
+        "unifi"
     ]
 }

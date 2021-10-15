@@ -1,0 +1,143 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "graylog.fullname" . }}
+  labels:
+    {{- include "graylog.labels" . | nindent 4 }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  
+  selector:
+    matchLabels:
+      {{- include "graylog.selectorLabels" . | nindent 6 }}
+  
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "graylog.selectorLabels" . | nindent 8 }}
+  
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  
+      serviceAccountName: {{ include "graylog.serviceAccountName" . }}
+  
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+  
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          # "/usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh"
+
+          envFrom:
+            - secretRef:
+                name: {{ include "graylog.fullname" . }}
+            - configMapRef:
+                name: {{ include "graylog.fullname" . }}
+
+          ports:
+            - name: beats
+              containerPort: 5044
+              protocol: TCP
+            - name: syslog-tcp
+              containerPort: 5140
+              protocol: TCP
+            - name: syslog-upd
+              containerPort: 5140
+              protocol: UDP
+            - name: raw-tcp
+              containerPort: 5555
+              protocol: TCP
+            - name: raw-udp
+              containerPort: 5555
+              protocol: UDP
+            - name: api
+              containerPort: 9000
+              protocol: TCP
+            - name: gelf-tcp
+              containerPort: 12201
+              protocol: TCP
+            - name: gelf-udp
+              containerPort: 12201
+              protocol: UDP
+            - name: custom-tcp
+              containerPort: 10001
+              protocol: TCP
+            - name: custom-udp
+              containerPort: 10001
+              protocol: UDP
+            - name: data
+              containerPort: 13301
+              protocol: TCP
+            - name: config
+              containerPort: 13302
+              protocol: TCP
+
+            # - "5044:5044/tcp"   # Beats
+            # - "5140:5140/udp"   # Syslog
+            # - "5140:5140/tcp"   # Syslog
+            # - "5555:5555/tcp"   # RAW TCP
+            # - "5555:5555/udp"   # RAW TCP
+            # - "9000:9000/tcp"   # Server API
+            # - "12201:12201/tcp" # GELF TCP
+            # - "12201:12201/udp" # GELF UDP
+            # #- "10000:10000/tcp" # Custom TCP port
+            # #- "10000:10000/udp" # Custom UDP port
+            # - "13301:13301/tcp" # Forwarder data
+            # - "13302:13302/tcp" # Forwarder config
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: api
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: api
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: graylog
+              mountPath: /usr/share/graylog/data/data
+              subPath: {{ .Values.nfs.subPath.data }}
+            - name: graylog
+              mountPath: /usr/share/graylog/data/journal
+              subPath: {{ .Values.nfs.subPath.journal }}
+
+      volumes:
+        - name: graylog
+          persistentVolumeClaim:
+            claimName: {{ include "graylog.fullname" . }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
