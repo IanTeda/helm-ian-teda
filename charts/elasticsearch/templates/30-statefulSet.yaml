@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: StatefulSet
+
+metadata:
+  name: {{ include "elasticsearch.fullname" . }}
+  labels:
+    {{- include "elasticsearch.labels" . | nindent 4 }}
+
+spec:
+  serviceName: {{ include "elasticsearch.fullname" . }}
+
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "elasticsearch.selectorLabels" . | nindent 6 }}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        selector:
+          matchLabels:
+            {{- include "elasticsearch.labels" . | nindent 12 }}
+        storageClassName: {{ .Values.volume.storageClassName }}
+        accessModes: ["{{ .Values.volume.accessModes }}"]
+        resources:
+          requests:
+            storage: "{{ .Values.volume.size }}"
+  
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "elasticsearch.selectorLabels" . | nindent 8 }}
+  
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  
+      serviceAccountName: {{ include "elasticsearch.serviceAccountName" . }}
+  
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+  
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+  
+          ports:
+            - name: rest
+              containerPort: 9200
+              protocol: TCP
+            - name: communications
+              containerPort: 9300
+              protocol: TCP
+
+          envFrom:
+            # - secretRef:
+            #     name: {{ include "elasticsearch.fullname" . }}
+            - configMapRef:
+                name: {{ include "elasticsearch.fullname" . }}
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - curl -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - curl -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            timeoutSeconds: 5
+  
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+              subPath: {{ .Values.nfs.subPath }}
+  
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

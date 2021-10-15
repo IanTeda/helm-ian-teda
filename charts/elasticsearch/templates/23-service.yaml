@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: {{ include "elasticsearch.fullname" . }}
+  labels:
+    {{- include "elasticsearch.labels" . | nindent 4 }}
+  annotations:
+    metallb.universe.tf/allow-shared-ip: {{ .Release.Namespace }}
+
+spec:
+  selector:
+    {{- include "elasticsearch.selectorLabels" . | nindent 4 }}
+
+  type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+
+  ports:
+    - name: rest
+      protocol: TCP
+      port: {{ .Values.service.port.rest }}
+      targetPort: rest
+    - name: communications
+      protocol: TCP
+      port: {{ .Values.service.port.communications }}
+      targetPort: communications
