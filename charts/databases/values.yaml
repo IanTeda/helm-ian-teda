@@ -1,0 +1,76 @@
+
+redis:
+  image:
+    tag: "6.2"
+  config:
+    bind: "0.0.0.0"
+    socket: "true"
+    appendOnly: "true"
+  auth:
+    enabled: false
+  serviceAccount:
+    create: true
+  volume:
+    storageClassName: "raid"
+    size: 8Gi
+  nfs:
+    server: "192.168.0.4"
+    path: "/nfs/volume/path"
+    subPath: "databases/redis"
+  podSecurityContext:
+    fsGroup: 1000
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1000
+  service:
+    loadBalancerIP: 192.168.0.10
+
+postgres:
+  image:
+    tag: "14"
+  serviceAccount:
+    create: true
+  config:
+    postgresDb: "postgres"
+    pgData: "/var/lib/postgresql/data"
+  auth:
+    username: "postgres"
+    password: "change_your_password"
+  volume:
+    storageClassName: "raid"
+  nfs:
+    server: "192.168.0.4"
+    path: "/nfs/volume/path"
+    subPath: "databases/postgres-14"
+  service:
+    loadBalancerIP: 192.168.0.10
+
+mongo:
+  image:
+    tag: "4.4"
+  auth:
+    username: "mongo"
+    password: "change_your_password"
+  service:
+    loadBalancerIP: 192.168.0.10
+  volume:
+    storageClassName: "raid"
+  nfs:
+    server: "192.168.0.4"
+    path: "/nfs/volume/path"
+    subPath: "databases/mongo"
+
+elasticsearch:
+  image:
+    tag: "7.14.1"
+  volume:
+    storageClassName: "raid"
+  nfs:
+    server: "192.168.0.4"
+    path: "/nfs/volume/path"
+    subPath: "databases/elasticsearch"
+  podSecurityContext:
+    fsGroup: 1000
+  service:
+    loadBalancerIP: 192.168.0.10

@@ -1,0 +1,15 @@
+dependencies:
+- name: redis
+  repository: https://ianteda.github.io/helm-ian-teda/
+  version: 0.1.0
+- name: postgres
+  repository: https://ianteda.github.io/helm-ian-teda/
+  version: 0.1.0
+- name: mongo
+  repository: https://ianteda.github.io/helm-ian-teda/
+  version: 0.1.0
+- name: elasticsearch
+  repository: https://ianteda.github.io/helm-ian-teda/
+  version: 0.1.0
+digest: sha256:f9e2269df3b6396473a9952f0892e4c611f25430874a57ad0b5162bc1f407f68
+generated: "2021-10-15T12:57:30.472208+11:00"
