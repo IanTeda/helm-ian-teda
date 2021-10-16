@@ -17,3 +17,4 @@ data:
   xpack.license.self_generated.type: trial
   xpack.security.enabled: "false"
   ES_JAVA_OPTS: "-Xms1024m -Xmx1024m"
+  action.auto_create_index: "false"

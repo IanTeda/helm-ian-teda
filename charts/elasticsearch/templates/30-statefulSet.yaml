@@ -49,6 +49,16 @@ spec:
   
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      ## If there is an ungraceful node shutdown file locks stop rollover to another node
+      ## So lets delete file locks
+      initContainers:
+        - name: remove-file-locks
+          image: busybox:1.34
+          command:
+            - sh 
+            - -c
+            - rm -f /usr/share/elasticsearch/data/*.lock
   
       containers:
         - name: {{ .Chart.Name }}
