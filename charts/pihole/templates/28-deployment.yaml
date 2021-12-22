@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: {{ include "pihole.fullname" . }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+
+  selector:
+    matchLabels:
+      {{- include "pihole.selectorLabels" . | nindent 6 }}
+
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pihole.selectorLabels" . | nindent 8 }}
+
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      serviceAccountName: {{ include "pihole.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          envFrom:
+            - secretRef:
+                name: {{ include "pihole.fullname" . }}
+            - configMapRef:
+                name: {{ include "pihole.fullname" . }}
+
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: dns
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: bootps
+              containerPort: 67
+              protocol: UDP
+
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          volumeMounts:
+            - name: pihole
+              mountPath: "/etc/pihole/"
+              subPath: "{{ .Values.volume.subPath }}/pihole"
+            - name: dnsmasq
+              mountPath: "/etc/dnsmasq.d/"
+              subPath: "{{ .Values.volume.subPath }}/dnsmasq.d"
+
+      volumes:
+        - name: pihole
+          persistentVolumeClaim:
+            claimName: {{ include "pihole.fullname" . }}-usb-local
+        - name: dnsmasq
+          persistentVolumeClaim:
+            claimName: {{ include "pihole.fullname" . }}-usb-local
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

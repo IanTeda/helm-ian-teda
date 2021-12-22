@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: {{ include "pihole.fullname" . }}
+  labels:
+    {{- include "pihole.labels" . | nindent 4 }}
+
+data:
+  TZ: "{{ .Values.tz }}"
+  ServerIP: "{{ .Values.service.loadBalancerIP }}"
+  WEB_PORT: "{{ .Values.admin.port }}"
+  WEBUIBOXEDLAYOUT: "{{ .Values.admin.boxed_layout }}"
+  VIRTUAL_HOST: "{{ .Values.admin.host }}"
+  PIHOLE_DOMAIN: "{{ .Values.admin.domain }}"
+  PIHOLE_DNS_: "{{ .Values.dns.upstream }}"
+  DNSSEC: "{{ .Values.dns.sec }}"
+  DNSMASQ_LISTENING: "{{ .Values.dns.listening }}"
+  DNS_BOGUS_PRIV: "{{ .Values.dns.bogus_priv }}"
+  DNS_FQDN_REQUIRED: "{{ .Values.dns.fqdn_required }}"
+  ServerIP: "{{ .Values.service.loadBalancerIP }}"
+  IPv6: 'false'
+  QUERY_LOGGING: 'true'
+  REV_SERVER: 'true'
+  REV_SERVER_DOMAIN: {{ .Values.forwarding.domain }}
+  REV_SERVER_TARGET: {{ .Values.forwarding.target }}
+  REV_SERVER_CIDR: {{ .Values.forwarding.cidr }}
+  # DNSMASQ_USER: root
+  TEMPERATUREUNIT: c
+  DHCP_ACTIVE: 'false'
